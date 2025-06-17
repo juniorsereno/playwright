@@ -1,7 +1,6 @@
 services:
   airbnb-scraper:
     build: .
-    container_name: airbnb_availability_scraper
     restart: unless-stopped
     # A seção de volumes foi removida, pois os dados agora são enviados via webhook.
     # Se precisar depurar e salvar screenshots, você pode descomentar a linha abaixo.
