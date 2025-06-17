@@ -1,0 +1,12 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# CSV de saída
+disponibilidade_airbnb.csv
+erro.png
+erro_geral.png
+
+# Arquivos de backup
+*backup*.py
