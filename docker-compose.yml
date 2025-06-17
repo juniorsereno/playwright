@@ -1,8 +1,6 @@
-version: '3.8'
-
 services:
   airbnb-scraper:
-    image: ghcr.io/juniorsereno/playwright:latest # O Easypanel irá construir a imagem a partir do seu repositório
+    build: .
     container_name: airbnb_availability_scraper
     restart: unless-stopped
     volumes:
