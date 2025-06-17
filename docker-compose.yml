@@ -4,4 +4,4 @@ services:
     container_name: airbnb_availability_scraper
     restart: unless-stopped
     volumes:
-      - ./disponibilidade_airbnb.csv:/app/disponibilidade_airbnb.csv
+      - ./data:/app/data

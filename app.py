@@ -8,7 +8,7 @@ URL_AIRBNB = "https://www.airbnb.com.br/rooms/673651674777082764"
 NUMERO_DE_CALENDARIOS_A_PROCESSAR = 6 # Cada "processamento" avança 2 meses. 6 processamentos = 12 meses.
                                      # O primeiro processamento pega os 2 meses iniciais.
                                      # As 5 processamentos seguintes avançam 5x2=10 meses, totalizando 12 meses.
-OUTPUT_CSV_FILE = "/app/disponibilidade_airbnb.csv" # Caminho dentro do container
+OUTPUT_CSV_FILE = "/app/data/disponibilidade_airbnb.csv" # Caminho dentro do container
 
 def parse_month_year_from_header(header_text):
     """Converte 'janeiro de 2026' para ('janeiro', 1, 2026)."""
@@ -147,7 +147,7 @@ def extrair_disponibilidade():
         except Exception as e:
             print(f"\n--- OCORREU UM ERRO GERAL NA AUTOMAÇÃO ---")
             print(f"Erro: {e}")
-            screenshot_path = os.path.join(os.path.dirname(OUTPUT_CSV_FILE), "erro_geral.png")
+            screenshot_path = "/app/data/erro_geral.png"
             print(f"Um erro aconteceu. Verifique o screenshot '{screenshot_path}' para ver o estado final da página.")
             page.screenshot(path=screenshot_path, full_page=True)
 
