@@ -1,14 +1,34 @@
 import time
-import csv
 import os
+import json
+import requests
 from playwright.sync_api import sync_playwright, expect
 
 # --- CONFIGURAÇÕES ---
 URL_AIRBNB = "https://www.airbnb.com.br/rooms/673651674777082764"
+WEBHOOK_URL = "https://webh.criativamaisdigital.com.br/webhook/9aa99e97-02de-4a1a-a7ba-3076e14fe669"
 NUMERO_DE_CALENDARIOS_A_PROCESSAR = 6 # Cada "processamento" avança 2 meses. 6 processamentos = 12 meses.
                                      # O primeiro processamento pega os 2 meses iniciais.
                                      # As 5 processamentos seguintes avançam 5x2=10 meses, totalizando 12 meses.
-OUTPUT_CSV_FILE = "/app/data/disponibilidade_airbnb.csv" # Caminho dentro do container
+
+def enviar_dados_para_webhook(dados):
+    """Envia os dados coletados para o webhook especificado."""
+    if not dados:
+        print("Nenhum dado para enviar ao webhook.")
+        return
+
+    print(f"Enviando {len(dados)} registros para o webhook...")
+    try:
+        headers = {'Content-Type': 'application/json'}
+        response = requests.post(WEBHOOK_URL, data=json.dumps(dados, indent=2), headers=headers, timeout=30)
+        
+        # Verifica se a requisição foi bem-sucedida
+        response.raise_for_status()
+        
+        print(f"Dados enviados com sucesso! Status: {response.status_code}")
+    except requests.exceptions.RequestException as e:
+        print(f"--- ERRO AO ENVIAR DADOS PARA O WEBHOOK ---")
+        print(f"Erro: {e}")
 
 def parse_month_year_from_header(header_text):
     """Converte 'janeiro de 2026' para ('janeiro', 1, 2026)."""
@@ -131,25 +151,20 @@ def extrair_disponibilidade():
                         print(f"Erro ao processar painel do mês {panel_index + 1}: {e_panel}")
                         continue
 
-            if all_availability_data:
-                print(f"\nSalvando dados em {OUTPUT_CSV_FILE}...")
-                # Garante que o diretório de saída exista
-                os.makedirs(os.path.dirname(OUTPUT_CSV_FILE), exist_ok=True)
-                keys = all_availability_data[0].keys()
-                with open(OUTPUT_CSV_FILE, 'w', newline='', encoding='utf-8') as output_file:
-                    dict_writer = csv.DictWriter(output_file, fieldnames=keys)
-                    dict_writer.writeheader()
-                    dict_writer.writerows(all_availability_data)
-                print("Dados salvos com sucesso!")
-            else:
-                print("Nenhum dado de disponibilidade foi extraído.")
+            # Envia os dados coletados para o webhook
+            enviar_dados_para_webhook(all_availability_data)
 
         except Exception as e:
             print(f"\n--- OCORREU UM ERRO GERAL NA AUTOMAÇÃO ---")
             print(f"Erro: {e}")
-            screenshot_path = "/app/data/erro_geral.png"
-            print(f"Um erro aconteceu. Verifique o screenshot '{screenshot_path}' para ver o estado final da página.")
-            page.screenshot(path=screenshot_path, full_page=True)
+            # Tenta tirar um screenshot em caso de erro, mas não falha se o diretório não existir
+            try:
+                os.makedirs("/app/data", exist_ok=True)
+                screenshot_path = "/app/data/erro_geral.png"
+                print(f"Um erro aconteceu. Verifique o screenshot '{screenshot_path}' para ver o estado final da página.")
+                page.screenshot(path=screenshot_path, full_page=True)
+            except Exception as e_ss:
+                print(f"Não foi possível salvar o screenshot. Erro: {e_ss}")
 
         finally:
             print("\nAutomação concluída. Fechando o navegador.")
